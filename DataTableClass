@@ -1,0 +1,93 @@
+  Class DataSheet
+    Dim sheetDict    
+    Dim currentRow
+
+    Public Function DataSheet()
+        Set sheetDict = CreateObject("Scripting.Dictionary")           
+        sheetDict.Add "1", CreateObject("Scripting.Dictionary")
+        Project.Variables.updateDataTable = True
+        Set DataSheet = sheetDict
+        currentRow = 1
+    End Function
+    
+    Public Function AddParameter(paramName)
+          if paramName ="F1" Then 
+            logResults micInfo ,"F1 found" ,"F1 found"
+          Else
+          	If Not sheetDict.Item("1").Exists(paramName) Then
+		          Dim availableRows
+		          Project.Variables.updateDataTable = True
+		          availableRows = GetRowCount()
+		          For i = 1 to availableRows
+		            sheetDict.Item(Cstr(i)).Add paramName, ""
+		          Next
+        End If
+          
+          End if 
+          
+    End Function
+
+'    below function will erturn the value not the parameter object as we don't have it as seperate object        
+'    Public Function GetParameter(paramName)
+'        GetParameter = sheetDict.Item("1").Item(paramName)
+'    End Function
+            
+    Public Function GetParameterName(ByVal colIndex)
+        Dim keyArr 
+        keyArr = sheetDict.Item("1").Keys()
+        'logResults micInfo, colIndex - 1, "Returning param name - " & keyArr(colIndex-1) 
+        
+        GetParameterName = keyArr(colIndex-1) 
+    End Function
+    
+    Public Function GetParameterValue(ByVal colIndex)
+        Dim keyArr 
+        keyArr = sheetDict.Item("1").Keys
+        GetParameterValue = sheetDict.Item(CStr(currentRow)).Item(keyArr(colIndex-1)) 
+    End Function
+    
+    Public Function DeleteParameter(ByVal colName)
+        Dim keyArr
+        For i = 1 to GetRowCount()        
+          sheetDict.Item(CStr(i)).Remove(colName)
+        Next 
+    End Function        
+    
+    Public Function GetParameterCount()
+        GetParameterCount = UBound(sheetDict.Item("1").Items()) + 1
+    End Function
+
+    Public Function GetRowCount()
+        GetRowCount = UBound(sheetDict.Items())+1
+    End Function    
+        
+    Public Sub SetCurrentRow(rowNum)
+        Dim availableRows
+        availableRows = GetRowCount()
+        currentRow = rowNum
+        If availableRows < rowNum Then
+          For i = availableRows+1 to rowNum
+             sheetDict.Add Cstr(i), CreateObject("Scripting.Dictionary")
+             CloneParameters()  
+          Next
+        End If
+    End Sub
+    
+    Public Sub CloneParameters()
+      Dim keyArr
+      keyArr = sheetDict.Item(CStr(1)).Keys
+      For i = 0 to  UBound(keyArr)
+        sheetDict.Item(CStr(currentRow)).Add keyArr(i), ""
+      Next
+    End Sub
+    
+    Public Function GetCurrentRow()
+        GetCurrentRow = currentRow
+    End Function
+    
+    Public Sub SetValue(byval paramName, byval val)
+        sheetDict.Item(Cstr(currentRow)).Item(paramName) = val      
+        Project.Variables.updateDataTable = True
+    End Sub
+    
+  End Class
